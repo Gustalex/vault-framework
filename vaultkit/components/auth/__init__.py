@@ -16,7 +16,7 @@ from .token import StaticTokenAuthenticator, StaticTokenProvider
 
 
 def create_authenticator(config: VaultConfig, transport: IVaultTransport) -> IAuthenticator:
-    """Fábrica do componente: escolhe o método de login pela configuração."""
+    """Factory do componente: escolhe o método de login pela configuração."""
     if config.auth_method == "approle":
         return AppRoleAuthenticator(transport, config.role_id or "", config.secret_id or "", config.auth_mount)
     if config.auth_method == "token":

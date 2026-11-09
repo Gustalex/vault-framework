@@ -89,9 +89,9 @@ class EnvInjector(SecretAccessFramework[str, int]):
         print(f"env-injector: executando {' '.join(self.command)} com {len(env)} variável(is)\n", flush=True)
         return subprocess.call(self.command, env={**os.environ, **env})
 
-    # ---------------- ganchos / fábricas ----------------
+    # ---------------- hooks / factory methods ----------------
     def parse_reference(self, raw: str) -> SecretRef:
-        """GANCHO: remove o esquema vault: e exige a chave."""
+        """HOOK: remove o esquema vault: e exige a chave."""
         ref = SecretRef.parse(raw.removeprefix(SCHEME))
         if not ref.key:
             raise InvalidReferenceError(f"{raw!r}: informe a chave com #CHAVE")

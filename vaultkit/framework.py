@@ -5,22 +5,22 @@ fixo que toda aplicação reaproveita (autenticar, consultar cache, buscar no co
 auditar, mascarar, tratar erros e liberar recursos). As aplicações só preenchem
 os **hotspots** (pontos de adaptação):
 
-=========================  ==========  =======================================
-Hotspot                    Tipo        Para que serve
-=========================  ==========  =======================================
-``load_references``        abstrato    de onde vêm as referências (arquivo,
-                                       banco, CLI...) → ``{apelido: referência}``
-``transform``              abstrato    converte o :class:`Secret` no objeto que
-                                       a aplicação usa (credencial, variável...)
-``consume``                abstrato    o que a aplicação faz com os segredos
-``parse_reference``        gancho      sintaxe própria de referência
-``validate_reference``     gancho      regras extras (ex.: só ``apps/x/*``)
-``on_error``               gancho      tratamento de falha (padrão: relançar)
-``before_run``/``after_run``  gancho   preparação e limpeza
-``create_provider``        fábrica     qual cofre/estratégia usar
-``create_cache``           fábrica     política de cache
-``create_audit_sink``      fábrica     para onde vai a auditoria
-=========================  ==========  =======================================
+=========================  ==============  =======================================
+Hotspot                    Tipo            Para que serve
+=========================  ==============  =======================================
+``load_references``        abstrato        de onde vêm as referências (arquivo,
+                                           banco, CLI...) → ``{alias: referência}``
+``transform``              abstrato        converte o :class:`Secret` no objeto que
+                                           a aplicação usa (credencial, variável...)
+``consume``                abstrato        o que a aplicação faz com os segredos
+``parse_reference``        hook            sintaxe própria de referência
+``validate_reference``     hook            regras extras (ex.: só ``apps/x/*``)
+``on_error``               hook            tratamento de falha (padrão: relançar)
+``before_run``/``after_run``  hook         preparação e limpeza
+``create_provider``        factory method  qual cofre/estratégia usar
+``create_cache``           factory method  política de cache
+``create_audit_sink``      factory method  para onde vai a auditoria
+=========================  ==============  =======================================
 """
 
 from __future__ import annotations
@@ -48,9 +48,9 @@ class SecretAccessFramework(ABC, Generic[T, R]):
     """Esqueleto reutilizável de uma aplicação que consome segredos do cofre.
 
     :param config: configuração; ``None`` lê de ``VAULTKIT_*``.
-    :param provider: injeta um provedor pronto (testes); senão usa :meth:`create_provider`.
+    :param provider: injeta um provider pronto (testes); senão usa :meth:`create_provider`.
     :param cache: injeta um cache; senão usa :meth:`create_cache`.
-    :param audit: injeta um destino de auditoria; senão usa :meth:`create_audit_sink`.
+    :param audit: injeta um audit sink; senão usa :meth:`create_audit_sink`.
     """
 
     app_name: str = "vaultkit-app"
@@ -64,7 +64,7 @@ class SecretAccessFramework(ABC, Generic[T, R]):
 
     @property
     def provider(self) -> SecretProvider:
-        """Provedor criado sob demanda (só conecta quando precisa)."""
+        """Provider criado sob demanda (só conecta quando precisa)."""
         if self._provider is None:
             self._provider = self.create_provider()
         return self._provider
@@ -75,16 +75,16 @@ class SecretAccessFramework(ABC, Generic[T, R]):
     def execute(self) -> R:
         """Algoritmo fixo do framework.
 
-        1. ``before_run()``                          — gancho
+        1. ``before_run()``                          — hook
         2. ``load_references()``                     — **hotspot**
         3. para cada referência:
-              ``parse_reference()``                  — gancho
-              ``validate_reference()``               — gancho
+              ``parse_reference()``                  — hook
+              ``validate_reference()``               — hook
               ``_resolve()``  cache → cofre → auditoria  (fixo)
               ``transform()``                        — **hotspot**
         4. ``consume(itens)``                        — **hotspot**
-        5. ``on_success()`` / ``on_error()``         — ganchos
-        6. ``after_run()`` e liberação do provedor   — gancho + fixo
+        5. ``on_success()`` / ``on_error()``         — hooks
+        6. ``after_run()`` e liberação do provider   — hook + fixo
         """
         try:
             self.before_run()
@@ -109,7 +109,7 @@ class SecretAccessFramework(ABC, Generic[T, R]):
     # Passos fixos (frozen spots)
     # ------------------------------------------------------------------ #
     def _resolve(self, alias: str, ref: SecretRef) -> Secret:
-        """Cache → provedor → auditoria. Igual para toda aplicação."""
+        """Cache → provider → auditoria. Igual para toda aplicação."""
         key = ref.cache_key()
         cached = self.cache.get(key)
         if cached is not None:
@@ -140,7 +140,7 @@ class SecretAccessFramework(ABC, Generic[T, R]):
         return (time.perf_counter() - start) * 1000
 
     def release(self) -> None:
-        """Fecha o provedor (revoga o token) ao fim da execução."""
+        """Fecha o provider (revoga o token) ao fim da execução."""
         if self._provider is not None:
             self._provider.close()
             self._provider = None
@@ -155,7 +155,7 @@ class SecretAccessFramework(ABC, Generic[T, R]):
     # ================================================================== #
     @abstractmethod
     def load_references(self) -> Mapping[str, str]:
-        """Devolve ``{apelido: referência}`` com os segredos que a aplicação precisa."""
+        """Devolve ``{alias: referência}`` com os segredos que a aplicação precisa."""
 
     @abstractmethod
     def transform(self, alias: str, ref: SecretRef, secret: Secret) -> T:
@@ -166,7 +166,7 @@ class SecretAccessFramework(ABC, Generic[T, R]):
         """Usa os objetos produzidos por :meth:`transform` e devolve o resultado."""
 
     # ================================================================== #
-    # HOTSPOTS opcionais (ganchos com comportamento padrão)
+    # HOTSPOTS opcionais (hooks com comportamento padrão)
     # ================================================================== #
     def parse_reference(self, raw: str) -> SecretRef:
         """Converte a string em :class:`SecretRef` (padrão: ``[mount:]caminho[#chave][@versão]``)."""
@@ -200,7 +200,7 @@ class SecretAccessFramework(ABC, Generic[T, R]):
         return TTLSecretCache(ttl=self.config.cache_ttl)
 
     def create_audit_sink(self) -> IAuditSink:
-        """Destino da auditoria. Padrão: ``logging``."""
+        """Para onde vai a auditoria. Padrão: ``logging``."""
         return LoggingAuditSink()
 
 

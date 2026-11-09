@@ -31,7 +31,7 @@ flowchart LR
 | --- | --- | --- |
 | Framework | `vaultkit/framework.py` | `SecretAccessFramework`: Template Method (`execute`) + hotspots |
 | Componentes | `vaultkit/components/{auth,secrets,cache,audit}` | interface provida + interfaces requeridas, usados pelo framework e pelos serviços |
-| Provedores | `vaultkit/providers/` | Strategy (`SecretProvider`), Adapters (`VaultProvider`, `OpenBaoProvider`, `GatewayProvider`), Factory/Registry |
+| Providers | `vaultkit/providers/` | Strategy (`SecretProvider`), Adapters (`VaultProvider`, `OpenBaoProvider`, `GatewayProvider`), Factory/Registry |
 | Microserviços | `services/` | FastAPI: gateway, auth, secret, audit |
 | Aplicações | `apps/` | `db_checker`, `env_injector`, `exemplo_minimo.py` |
 

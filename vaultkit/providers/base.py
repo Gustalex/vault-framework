@@ -1,4 +1,4 @@
-"""Contrato comum dos provedores de segredo (padrão **Strategy**)."""
+"""Contrato comum dos providers de segredo (padrão **Strategy**)."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ class SecretProvider(ABC):
 
     A aplicação (e o framework) só conhecem este contrato; cada cofre ganha um
     **Adapter** que traduz ``get_secret`` para a API dele. Trocar de cofre é
-    trocar a estratégia escolhida pela fábrica, sem reescrever a aplicação.
+    trocar a estratégia escolhida pela factory, sem reescrever a aplicação.
     """
 
     name: str = "abstract"
@@ -28,7 +28,7 @@ class SecretProvider(ABC):
         return [self.get_secret(r) for r in refs]
 
     def put_secret(self, ref: SecretRef, data: dict) -> int:  # pragma: no cover - opcional
-        """Grava um segredo (nem todo provedor permite escrita)."""
+        """Grava um segredo (nem todo provider permite escrita)."""
         raise NotImplementedError(f"{self.name} não suporta escrita")
 
     def health(self) -> dict:

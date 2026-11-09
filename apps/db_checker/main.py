@@ -107,18 +107,18 @@ class DbConnectionChecker(SecretAccessFramework[DbCredentials, list[CheckResult]
                 results.append(CheckResult(name, False, msg, self._ms(t0), creds.version))
         return results
 
-    # ---------------- ganchos ----------------
+    # ---------------- hooks ----------------
     def parse_reference(self, raw: str) -> SecretRef:
-        """GANCHO: aceita referências no formato pg:apps/db-checker/x."""
+        """HOOK: aceita referências no formato pg:apps/db-checker/x."""
         return SecretRef.parse(raw.removeprefix("pg:"))
 
     def validate_reference(self, alias: str, ref: SecretRef) -> None:
-        """GANCHO: a aplicação só pode ler caminhos do próprio escopo."""
+        """HOOK: a aplicação só pode ler caminhos do próprio escopo."""
         if not ref.path.startswith(self.ALLOWED_PREFIX):
             raise InvalidReferenceError(f"{alias}: referência fora de {self.ALLOWED_PREFIX}")
 
     def on_error(self, error: VaultKitError) -> list[CheckResult]:
-        """GANCHO: em vez de quebrar, devolve uma linha de falha no relatório."""
+        """HOOK: em vez de quebrar, devolve uma linha de falha no relatório."""
         return [CheckResult("*", False, f"{type(error).__name__}: {error}", 0.0)]
 
     def create_provider(self) -> SecretProvider:

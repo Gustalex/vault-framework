@@ -54,7 +54,7 @@ def test_template_method_calls_hotspots_in_order():
     assert app.execute() == {"a": "v1"}
     assert app.trace == ["before_run", "load_references", "parse_reference", "validate_reference",
                          "transform", "consume", "on_success", "after_run"]
-    assert prov.closed  # o framework libera o provedor ao final
+    assert prov.closed  # o framework libera o provider ao final
 
 
 def test_default_mount_is_applied_and_value_without_key():

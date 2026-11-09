@@ -1,4 +1,4 @@
-"""Provedores (Strategy + Adapter) e a fábrica que os escolhe (Factory/Registry)."""
+"""Providers (Strategy + Adapter) e a factory que os escolhe (Factory/Registry)."""
 
 from .base import SecretProvider
 from .gateway import GatewayProvider

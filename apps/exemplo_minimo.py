@@ -9,11 +9,11 @@ Passo 2 — a aplicação recebe só ``VAULTKIT_ROLE_ID``/``VAULTKIT_SECRET_ID``
 Passo 3 — herdar :class:`SecretAccessFramework[T, R]`.
 Passo 4 — implementar os 3 hotspots abstratos: ``load_references``,
           ``transform`` e ``consume``.
-Passo 5 — (opcional) sobrescrever ganchos/fábricas: ``validate_reference``,
+Passo 5 — (opcional) sobrescrever hooks/factory methods: ``validate_reference``,
           ``on_error``, ``create_provider``, ``create_cache``, ``create_audit_sink``.
 Passo 6 — chamar ``execute()``: o framework faz login, cache, leitura, auditoria,
           mascaramento, tratamento de erros e revoga o token no final.
-Passo 7 — testar sem cofre injetando um provedor falso (``provider=...``).
+Passo 7 — testar sem cofre injetando um provider falso (``provider=...``).
 Passo 8 — (extensão) outro cofre = registrar um Adapter com ``@registry.register``.
 
 Executar::

@@ -11,7 +11,7 @@ from .interfaces import AuthToken, IAuthenticator, ITokenProvider
 class TokenManager(ITokenProvider):
     """Implementa :class:`ITokenProvider` sobre qualquer :class:`IAuthenticator`.
 
-    * faz login preguiçoso na primeira chamada;
+    * faz lazy login na primeira chamada;
     * renova quando falta menos de 20% do TTL;
     * ``invalidate()`` força novo login (usado quando o cofre responde 403 a um
       token expirado);

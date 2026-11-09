@@ -12,10 +12,10 @@ classDiagram
         +load_references()* Mapping  «hotspot»
         +transform(alias, ref, secret)* T  «hotspot»
         +consume(items)* R  «hotspot»
-        +parse_reference(raw) SecretRef  «gancho»
-        +validate_reference(alias, ref)  «gancho»
-        +on_error(error) R  «gancho»
-        +before_run() / after_run()  «gancho»
+        +parse_reference(raw) SecretRef  «hook»
+        +validate_reference(alias, ref)  «hook»
+        +on_error(error) R  «hook»
+        +before_run() / after_run()  «hook»
         +create_provider() SecretProvider  «factory method»
         +create_cache() ISecretCache  «factory method»
         +create_audit_sink() IAuditSink  «factory method»

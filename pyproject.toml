@@ -1,0 +1,22 @@
+[project]
+name = "vaultkit"
+version = "1.0.0"
+description = "Framework para conexão simplificada com cofres de segredos (OpenBao/Vault) usando componentes de software e microserviços"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["httpx>=0.27"]
+
+[project.optional-dependencies]
+services = ["fastapi>=0.115", "uvicorn[standard]>=0.30"]
+apps = ["psycopg[binary]>=3.2"]
+dev = ["pytest>=8", "locust>=2.31"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["vaultkit*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

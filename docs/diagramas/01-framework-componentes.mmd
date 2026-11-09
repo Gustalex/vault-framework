@@ -1,0 +1,79 @@
+classDiagram
+    direction TB
+    class SecretAccessFramework {
+        <<abstract>>
+        +app_name: str
+        +config: VaultConfig
+        +cache: ISecretCache
+        +audit: IAuditSink
+        +provider: SecretProvider
+        +execute() R  «template method»
+        -_resolve(alias, ref) Secret
+        +load_references()* Mapping  «hotspot»
+        +transform(alias, ref, secret)* T  «hotspot»
+        +consume(items)* R  «hotspot»
+        +parse_reference(raw) SecretRef  «gancho»
+        +validate_reference(alias, ref)  «gancho»
+        +on_error(error) R  «gancho»
+        +before_run() / after_run()  «gancho»
+        +create_provider() SecretProvider  «factory method»
+        +create_cache() ISecretCache  «factory method»
+        +create_audit_sink() IAuditSink  «factory method»
+    }
+    class SecretProvider {
+        <<interface · Strategy>>
+        +get_secret(ref) Secret
+        +health() dict
+        +close()
+    }
+    class ISecretCache {
+        <<interface · Componente Cache>>
+    }
+    class IAuditSink {
+        <<interface · Componente Auditoria>>
+    }
+    class IAuthenticator {
+        <<interface · Componente Autenticação>>
+    }
+    class ISecretStore {
+        <<interface · Componente Segredos>>
+    }
+    class VaultProvider {
+        <<Adapter>>
+        +auth: TokenManager
+        +store(mount) KVv2SecretStore
+    }
+    class OpenBaoProvider {
+        <<Adapter>>
+    }
+    class GatewayProvider {
+        <<Adapter · microserviços>>
+    }
+    class ProviderRegistry {
+        <<Factory/Registry>>
+        +register(name, factory)
+        +create(config) SecretProvider
+    }
+    class VaultConfig
+    class SecretRef
+    class DbConnectionChecker {
+        <<Aplicação 1>>
+    }
+    class EnvInjector {
+        <<Aplicação 2>>
+    }
+    SecretAccessFramework --> SecretProvider : usa
+    SecretAccessFramework --> ISecretCache : usa
+    SecretAccessFramework --> IAuditSink : usa
+    SecretAccessFramework ..> ProviderRegistry : create_provider()
+    SecretAccessFramework ..> SecretRef
+    SecretAccessFramework --> VaultConfig
+    ProviderRegistry ..> SecretProvider : cria
+    SecretProvider <|.. VaultProvider
+    VaultProvider <|-- OpenBaoProvider
+    SecretProvider <|.. GatewayProvider
+    VaultProvider --> IAuthenticator
+    VaultProvider --> ISecretStore
+    GatewayProvider --> IAuthenticator
+    SecretAccessFramework <|-- DbConnectionChecker
+    SecretAccessFramework <|-- EnvInjector

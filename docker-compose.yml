@@ -1,0 +1,73 @@
+# VaultKit — arquitetura de microserviços
+#   api-gateway   :8800  (entrada única + painel web)
+#   auth-service  :8801  (componente auth)
+#   secret-service:8802  (componentes secrets + cache)
+#   audit-service :8803  (componente audit + SQLite)
+#   postgres      :5433  (banco "do cliente" usado pela aplicação db-checker)
+#
+# O OpenBao já roda fora deste compose (OrbStack, porta 8210). Para subir um
+# OpenBao próprio: docker compose --profile bao up -d  e  BAO_ADDR=http://openbao:8200
+name: vaultkit
+
+x-service: &service
+  build: .
+  restart: unless-stopped
+  environment: &env
+    BAO_ADDR: ${BAO_ADDR:-http://host.docker.internal:8210}
+    BAO_NAMESPACE: ${BAO_NAMESPACE:-vaultkit}
+    BAO_ALLOW_HTTP: "true"
+    AUDIT_URL: http://audit-service:8803
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+services:
+  api-gateway:
+    <<: *service
+    build: { context: ., args: { SERVICE_MODULE: services.gateway.main, SERVICE_PORT: "8800" } }
+    environment:
+      SERVICE_NAME: api-gateway
+      AUTH_URL: http://auth-service:8801
+      SECRET_URL: http://secret-service:8802
+      AUDIT_URL: http://audit-service:8803
+    ports: ["8800:8800"]
+    depends_on: [auth-service, secret-service, audit-service]
+
+  auth-service:
+    <<: *service
+    build: { context: ., args: { SERVICE_MODULE: services.auth_service.main, SERVICE_PORT: "8801" } }
+    environment: { <<: *env, SERVICE_NAME: auth-service }
+    ports: ["8801:8801"]
+
+  secret-service:
+    <<: *service
+    build: { context: ., args: { SERVICE_MODULE: services.secret_service.main, SERVICE_PORT: "8802" } }
+    environment: { <<: *env, SERVICE_NAME: secret-service, SECRET_CACHE_TTL: "15" }
+    ports: ["8802:8802"]
+
+  audit-service:
+    <<: *service
+    build: { context: ., args: { SERVICE_MODULE: services.audit_service.main, SERVICE_PORT: "8803" } }
+    environment: { SERVICE_NAME: audit-service, AUDIT_DB: /data/audit.db }
+    volumes: ["audit-data:/data"]
+    ports: ["8803:8803"]
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres-admin   # só laboratório; a app usa o usuário app_reader do cofre
+    ports: ["5433:5432"]
+    volumes: ["pg-data:/var/lib/postgresql/data"]
+
+  openbao:
+    profiles: ["bao"]
+    image: openbao/openbao:2.7.0
+    command: ["server", "-dev", "-dev-no-store-token"]
+    environment:
+      BAO_DEV_ROOT_TOKEN_ID: root-dev
+      BAO_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    ports: ["8210:8200"]
+
+volumes:
+  audit-data:
+  pg-data:

@@ -1,0 +1,28 @@
+flowchart LR
+    subgraph clientes[Clientes]
+        UI[Painel web<br/>navegador]
+        A1[App 1<br/>DB Connection Checker]
+        A2[App 2<br/>Env Injector]
+    end
+    subgraph docker[docker compose · rede vaultkit]
+        GW[api-gateway<br/>:8800<br/>roteamento + registry]
+        AUTH[auth-service<br/>:8801<br/>componente auth]
+        SEC[secret-service<br/>:8802<br/>secrets + cache]
+        AUD[audit-service<br/>:8803<br/>componente audit]
+        DB[(SQLite<br/>audit.db)]
+        PG[(PostgreSQL<br/>:5433)]
+    end
+    BAO[(OpenBao 2.7.0<br/>OrbStack :8210<br/>namespace vaultkit)]
+    UI -->|HTTP/JSON| GW
+    A1 -->|GatewayProvider| GW
+    A2 -->|GatewayProvider| GW
+    GW -->|/api/auth/*| AUTH
+    GW -->|/api/secrets/* /api/list/*| SEC
+    GW -->|/api/audit/*| AUD
+    AUTH -->|AppRole login| BAO
+    SEC -->|KV v2| BAO
+    AUTH -.->|eventos| AUD
+    SEC -.->|eventos| AUD
+    AUD --- DB
+    A1 -->|senha do cofre| PG
+    A1 -. modo --direct<br/>OpenBaoProvider .-> BAO

@@ -1,0 +1,21 @@
+classDiagram
+    direction TB
+    class ISecretCache {
+        <<interface provida>>
+        +get(key) Any
+        +put(key, value, ttl)
+        +invalidate(key)
+        +stats() dict
+    }
+    class TTLSecretCache {
+        +ttl: float
+        +max_entries: int
+        -clock: Callable
+        -data: OrderedDict
+        -lock: Lock
+    }
+    class NullCache {
+        <<Null Object>>
+    }
+    ISecretCache <|.. TTLSecretCache
+    ISecretCache <|.. NullCache

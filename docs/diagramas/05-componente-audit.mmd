@@ -1,0 +1,37 @@
+classDiagram
+    direction TB
+    class IAuditSink {
+        <<interface provida>>
+        +record(event)
+        +query(limit) list
+    }
+    class AuditEvent {
+        +action: str
+        +resource: str
+        +outcome: str
+        +actor: str
+        +service: str
+        +latency_ms: float
+        +detail: dict  «mascarado»
+        +timestamp: str
+        +to_dict() dict
+    }
+    class LoggingAuditSink
+    class MemoryAuditSink
+    class SQLiteAuditSink {
+        +stats() dict
+    }
+    class HttpAuditSink {
+        POST audit-service/events
+    }
+    class CompositeAuditSink {
+        <<Composite>>
+        +sinks: list
+    }
+    IAuditSink <|.. LoggingAuditSink
+    IAuditSink <|.. MemoryAuditSink
+    IAuditSink <|.. SQLiteAuditSink
+    IAuditSink <|.. HttpAuditSink
+    IAuditSink <|.. CompositeAuditSink
+    CompositeAuditSink o-- IAuditSink
+    IAuditSink ..> AuditEvent : registra

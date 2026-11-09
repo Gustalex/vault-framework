@@ -1,0 +1,4 @@
+[
+  {"name": "postgres-lab", "credential_ref": "apps/db-checker/postgres", "description": "PostgreSQL do laboratório (docker compose)"},
+  {"name": "postgres-lab-v1", "credential_ref": "apps/db-checker/postgres@1", "description": "mesma conta, versão 1 da senha (antes da rotação)"}
+]

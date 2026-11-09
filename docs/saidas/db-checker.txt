@@ -1,0 +1,14 @@
+
+DB Connection Checker · modo microserviços (GatewayProvider)
+------------------------------------------------------------------------------
+alvo               ok   versão       ms  detalhe
+postgres-lab       sim  2          14.0  conectado como app_reader · PostgreSQL 16.15 on aarch64-unknown-linux-musl
+postgres-lab-v1    NÃO  1           4.1  FATAL: password authentication failed for user "app_reader"
+------------------------------------------------------------------------------
+
+DB Connection Checker · modo direto (OpenBaoProvider)
+------------------------------------------------------------------------------
+alvo               ok   versão       ms  detalhe
+postgres-lab       sim  2           9.4  conectado como app_reader · PostgreSQL 16.15 on aarch64-unknown-linux-musl
+postgres-lab-v1    NÃO  1           6.0  FATAL: password authentication failed for user "app_reader"
+------------------------------------------------------------------------------

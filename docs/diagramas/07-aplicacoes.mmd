@@ -1,0 +1,47 @@
+classDiagram
+    direction TB
+    class SecretAccessFramework {
+        <<abstract>>
+        +execute() R
+        +load_references()*
+        +transform()*
+        +consume()*
+    }
+    class DbConnectionChecker {
+        +app_name = "db-checker"
+        +targets_file: Path
+        +load_references() targets.json
+        +parse_reference() aceita pg:
+        +validate_reference() só apps/db-checker/*
+        +transform() DbCredentials
+        +consume() psycopg.connect + SELECT
+        +on_error() relatório de falha
+        +create_provider() gateway ou openbao
+    }
+    class EnvInjector {
+        +app_name = "env-injector"
+        +template: Path
+        +command: list
+        +load_references() app.env.template
+        +parse_reference() remove vault: e exige #chave
+        +transform() str
+        +consume() subprocess com env
+        +create_cache() TTL 300 s
+        +create_audit_sink() log + audit-service
+        +create_provider() gateway ou openbao
+    }
+    class PaymentJob {
+        <<exemplo mínimo>>
+        +load_references()
+        +transform()
+        +consume()
+    }
+    class DbCredentials {
+        +host, port, dbname
+        +username
+        +password «oculto»
+    }
+    SecretAccessFramework <|-- DbConnectionChecker
+    SecretAccessFramework <|-- EnvInjector
+    SecretAccessFramework <|-- PaymentJob
+    DbConnectionChecker ..> DbCredentials

@@ -1,0 +1,17 @@
+env-injector: executando .venv/bin/python apps/env_injector/demo_service.py com 6 variável(is)
+
+demo_service iniciado com configuração vinda do ambiente:
+  APP_ENV        = laboratorio
+  MERCHANT_ID    = lab-0042
+  FEATURE_FLAGS  = beta,dark-mode
+  API_KEY        = *** (35 chars recebidos)
+  SMTP_PASSWORD  = *** (24 chars recebidos)
+  PAYMENT_TOKEN  = *** (32 chars recebidos)
+
+Env Injector · 5 segredo(s) do cofre + 1 valor(es) literal(is)
+  APP_ENV          literal  laboratorio
+  API_KEY          cofre    *** (35 chars)
+  SMTP_PASSWORD    cofre    *** (24 chars)
+  FEATURE_FLAGS    cofre    *** (14 chars)
+  PAYMENT_TOKEN    cofre    *** (32 chars)
+  MERCHANT_ID      cofre    *** (8 chars)

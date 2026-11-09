@@ -1,0 +1,30 @@
+sequenceDiagram
+    autonumber
+    participant App as Aplicação (hotspots)
+    participant FW as SecretAccessFramework.execute()
+    participant C as ISecretCache
+    participant P as GatewayProvider
+    participant GW as api-gateway :8800
+    participant AU as auth-service :8801
+    participant S as secret-service :8802
+    participant B as OpenBao
+    participant AD as audit-service :8803
+    FW->>App: load_references()
+    App-->>FW: {alias: "apps/x#chave"}
+    FW->>App: parse_reference() / validate_reference()
+    FW->>C: get(cache_key)
+    C-->>FW: None (miss)
+    FW->>P: get_secret(ref)
+    P->>GW: POST /api/auth/login
+    GW->>AU: POST /login
+    AU->>B: POST /v1/auth/approle/login
+    AU-->>AD: evento auth.login
+    P->>GW: GET /api/secrets/secret/apps/x
+    GW->>S: GET /secrets/secret/apps/x
+    S->>B: GET /v1/secret/data/apps/x
+    S-->>AD: evento secret.read
+    P-->>FW: Secret
+    FW->>C: put(cache_key, secret)
+    FW->>App: transform(alias, ref, secret)
+    FW->>App: consume(items)
+    FW->>P: close() → POST /api/auth/revoke

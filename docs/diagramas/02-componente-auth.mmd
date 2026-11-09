@@ -1,0 +1,52 @@
+classDiagram
+    direction TB
+    class IAuthenticator {
+        <<interface provida>>
+        +method: str
+        +login() AuthToken
+        +renew(token) AuthToken
+        +revoke(token)
+        +lookup(token) dict
+    }
+    class ITokenProvider {
+        <<interface provida>>
+        +get_token() str
+        +invalidate()
+    }
+    class IVaultTransport {
+        <<interface requerida>>
+        +request(method, path, json_body, token, params, use_namespace) dict
+        +close()
+    }
+    class AuthToken {
+        +value: str  «oculto no repr»
+        +policies: list
+        +ttl: int
+        +renewable: bool
+        +expires_in() float
+        +is_expiring(skew) bool
+    }
+    class AppRoleAuthenticator {
+        -role_id
+        -secret_id
+        -mount
+    }
+    class StaticTokenAuthenticator
+    class GatewayAuthenticator
+    class TokenManager {
+        +authenticator: IAuthenticator
+        +get_token() str
+        +is_valid() bool
+        +invalidate()
+        +revoke()
+    }
+    class StaticTokenProvider
+    IAuthenticator <|.. AppRoleAuthenticator
+    IAuthenticator <|.. StaticTokenAuthenticator
+    IAuthenticator <|.. GatewayAuthenticator
+    ITokenProvider <|.. TokenManager
+    ITokenProvider <|.. StaticTokenProvider
+    TokenManager o-- IAuthenticator
+    AppRoleAuthenticator --> IVaultTransport
+    StaticTokenAuthenticator --> IVaultTransport
+    IAuthenticator ..> AuthToken : cria
